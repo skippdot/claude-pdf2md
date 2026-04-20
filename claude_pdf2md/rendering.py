@@ -86,7 +86,15 @@ def markdown_to_pdf_bytes(
     body = md.render(md_text)
     html = _wrap_html(body)
     css = _default_css(page_size)
-    return HTML(string=html).write_pdf(stylesheets=[CSS(string=css)])
+    # Block WeasyPrint's default network/file fetcher. The diff render never
+    # needs remote images or stylesheets — a hostile MD (or one built from a
+    # hostile PDF) could otherwise beacon the processing host's IP or read
+    # local files via `file://` URIs.
+    return HTML(string=html, url_fetcher=_blocking_url_fetcher).write_pdf(stylesheets=[CSS(string=css)])
+
+
+def _blocking_url_fetcher(url: str) -> dict:
+    raise ValueError(f"external resource blocked for security: {url}")
 
 
 def _wrap_html(body_html: str) -> str:

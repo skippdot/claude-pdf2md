@@ -8,6 +8,30 @@ from .structure import strip_list_marker
 _SOFT_HYPHEN_RE = re.compile(r"(\w)-\s*$")
 _MARKUP_ESCAPE = {ord("["): r"\[", ord("]"): r"\]"}
 
+# Whitelist of URL schemes we'll emit into markdown. `javascript:`, `data:`,
+# `vbscript:`, `file:` and friends are blocked so a hostile PDF link
+# annotation can't turn into XSS or local-file-read when the MD is rendered.
+_ALLOWED_SCHEMES = ("http://", "https://", "mailto:", "tel:", "ftp://", "ftps://")
+_SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+\-.]*:")
+
+
+def _safe_url(url: str) -> str | None:
+    if not url:
+        return None
+    stripped = url.strip()
+    if not stripped:
+        return None
+    lower = stripped.lower()
+    if lower.startswith(_ALLOWED_SCHEMES):
+        # Percent-encode whitespace and control chars so the link target
+        # can't break out of the parens or inject newlines.
+        return re.sub(r"[\s\x00-\x1f\x7f]", lambda m: f"%{ord(m.group(0)):02X}", stripped)
+    if _SCHEME_RE.match(stripped):
+        return None
+    # Scheme-relative (`//host/…`) or path-only URLs that don't declare a
+    # scheme are rare in Claude research PDFs but harmless — keep them.
+    return stripped
+
 
 def render(doc: Doc, include_title: bool = True) -> str:
     out: list[str] = []
@@ -77,11 +101,12 @@ def _tokens_to_md(tokens: list[tuple[str, str | None, bool, bool]]) -> str:
     out: list[str] = []
     i = 0
     while i < len(tokens):
-        url = tokens[i][1]
-        if url:
+        raw_url = tokens[i][1]
+        safe_scheme = _safe_url(raw_url) if raw_url else None
+        if safe_scheme:
             j = i
             buf = []
-            while j < len(tokens) and tokens[j][1] == url:
+            while j < len(tokens) and tokens[j][1] == raw_url:
                 buf.append(tokens[j])
                 j += 1
             inner = _styled_run(buf)
@@ -90,11 +115,13 @@ def _tokens_to_md(tokens: list[tuple[str, str | None, bool, bool]]) -> str:
                 safe = inner_text.translate(_MARKUP_ESCAPE)
                 leading_ws = inner[: len(inner) - len(inner.lstrip())]
                 trailing_ws = inner[len(inner.rstrip()) :]
-                out.append(f"{leading_ws}[{safe}]({url}){trailing_ws}")
+                out.append(f"{leading_ws}[{safe}]({safe_scheme}){trailing_ws}")
             else:
                 out.append(inner)
             i = j
         else:
+            # Blocked scheme (javascript:, data:, file:, …) — drop the URL
+            # but keep the visible text so no content is silently lost.
             out.append(_styled_token(tokens[i]))
             i += 1
     return "".join(out)

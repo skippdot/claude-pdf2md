@@ -15,7 +15,7 @@ def apply_tables(mu: fitz.Document, doc: Doc) -> None:
         for tbl in tf:
             try:
                 cells = tbl.extract()
-            except Exception:  # pylint: disable=broad-exception-caught
+            except Exception:  # pylint: disable=broad-exception-caught  # nosec B112
                 # PyMuPDF's experimental table extractor can raise a variety
                 # of internal errors; a failed table should never poison the
                 # whole document conversion.
