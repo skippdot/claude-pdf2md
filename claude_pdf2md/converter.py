@@ -9,7 +9,7 @@ def convert(
     pdf_path: str | Path,
     output: str | Path | None = None,
     assets_dir: str | Path | None = None,
-    include_title: bool = True,
+    include_title: bool = False,
 ) -> str:
     md = convert_to_string(pdf_path, assets_dir=assets_dir, include_title=include_title)
     if output is not None:
@@ -20,7 +20,7 @@ def convert(
 def convert_to_string(
     pdf_path: str | Path,
     assets_dir: str | Path | None = None,
-    include_title: bool = True,
+    include_title: bool = False,
 ) -> str:
     pdf_path = str(pdf_path)
     assets_path = Path(assets_dir) if assets_dir is not None else None

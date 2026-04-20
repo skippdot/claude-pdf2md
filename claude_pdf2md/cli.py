@@ -28,9 +28,9 @@ def main(argv: list[str] | None = None) -> int:
         help="Directory to write embedded images (default: images dropped)",
     )
     ap.add_argument(
-        "--no-title",
+        "--with-title",
         action="store_true",
-        help="Do not emit document title as H1",
+        help="Emit the PDF metadata title as H1 (usually redundant with the visible first heading on page 1).",
     )
     ap.add_argument(
         "--diff",
@@ -49,7 +49,7 @@ def main(argv: list[str] | None = None) -> int:
         args.pdf,
         output=args.output,
         assets_dir=args.assets,
-        include_title=not args.no_title,
+        include_title=args.with_title,
     )
     if args.output is None and args.diff is None:
         sys.stdout.write(md)

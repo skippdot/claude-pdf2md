@@ -51,3 +51,6 @@ packages = ["claude_pdf2md"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra -q"
+markers = [
+    "roundtrip: MD→PDF→MD fidelity tests (require WeasyPrint).",
+]

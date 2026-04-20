@@ -37,6 +37,29 @@ def tmp_pdf(tmp_path):
     return _build
 
 
+@pytest.fixture
+def md_to_pdf(tmp_path):
+    """Build a real PDF from a Markdown string using the project's own
+    WeasyPrint-based MD→PDF renderer. The returned path points at a PDF
+    whose hyperlinks, headings, lists, tables and emphasis are all real —
+    perfect raw material for testing the PDF→MD direction end-to-end."""
+
+    pytest.importorskip("weasyprint")
+    pytest.importorskip("markdown_it")
+    from claude_pdf2md.rendering import markdown_to_pdf_bytes
+
+    counter = {"n": 0}
+
+    def _build(md_text: str) -> Path:
+        counter["n"] += 1
+        pdf_bytes = markdown_to_pdf_bytes(md_text)
+        path = tmp_path / f"roundtrip_{counter['n']}.pdf"
+        path.write_bytes(pdf_bytes)
+        return path
+
+    return _build
+
+
 @pytest.fixture(scope="session")
 def bulgaria_watch_pdf() -> Path:
     candidate = Path(

@@ -56,10 +56,15 @@ def _lines_to_md(lines: list[Line]) -> str:
         if idx > 0 and tokens:
             prev_text = tokens[-1][0]
             prev_url = tokens[-1][1]
+            next_text = line.spans[0].text if line.spans else ""
             next_url = line.spans[0].url if line.spans else None
             joiner_url = prev_url if prev_url == next_url else None
             if _SOFT_HYPHEN_RE.search(prev_text):
                 tokens[-1] = (prev_text[:-1], prev_url, tokens[-1][2], tokens[-1][3])
+            elif prev_text.endswith((" ", "\t")) or next_text.startswith((" ", "\t")):
+                # One side already carries the whitespace; emitting another
+                # joiner space would give "]  (" double-space artefacts.
+                pass
             else:
                 tokens.append((" ", joiner_url, False, False))
         for s in line.spans:
