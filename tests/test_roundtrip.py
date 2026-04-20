@@ -12,6 +12,7 @@ content dimensions that matter for downstream consumers: link URLs,
 heading levels, list structure, table rows, bold runs, and — modulo
 whitespace collapsing — the textual content itself.
 """
+
 from __future__ import annotations
 
 import re
@@ -19,7 +20,6 @@ import re
 import pytest
 
 from claude_pdf2md import convert_to_string
-
 
 pytestmark = pytest.mark.roundtrip
 
@@ -77,9 +77,7 @@ into prose so that neither sits at a line boundary.
     original_urls = {url for _, url in _extract_links(source)}
     returned_urls = {url for _, url in _extract_links(md)}
 
-    assert original_urls <= returned_urls, (
-        f"URLs lost in roundtrip: {original_urls - returned_urls}"
-    )
+    assert original_urls <= returned_urls, f"URLs lost in roundtrip: {original_urls - returned_urls}"
 
 
 def test_roundtrip_preserves_link_text_for_each_url(md_to_pdf):
@@ -218,9 +216,9 @@ Closing paragraph after the table.
     md = convert_to_string(pdf)
 
     table_lines = [ln for ln in md.splitlines() if ln.strip().startswith("|")]
-    assert any("Party" in ln and "Percent" in ln and "Seats" in ln for ln in table_lines), (
-        f"header row missing from roundtripped table: {table_lines}"
-    )
+    assert any(
+        "Party" in ln and "Percent" in ln and "Seats" in ln for ln in table_lines
+    ), f"header row missing from roundtripped table: {table_lines}"
     joined = "\n".join(table_lines)
     for party in ("Alpha", "Beta", "Gamma"):
         assert party in joined

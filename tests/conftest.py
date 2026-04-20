@@ -34,6 +34,7 @@ def tmp_pdf(tmp_path):
         doc.save(str(path))
         doc.close()
         return path
+
     return _build
 
 

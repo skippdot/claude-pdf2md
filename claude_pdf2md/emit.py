@@ -89,7 +89,7 @@ def _tokens_to_md(tokens: list[tuple[str, str | None, bool, bool]]) -> str:
             if inner_text:
                 safe = inner_text.translate(_MARKUP_ESCAPE)
                 leading_ws = inner[: len(inner) - len(inner.lstrip())]
-                trailing_ws = inner[len(inner.rstrip()):]
+                trailing_ws = inner[len(inner.rstrip()) :]
                 out.append(f"{leading_ws}[{safe}]({url}){trailing_ws}")
             else:
                 out.append(inner)
@@ -110,14 +110,7 @@ def _merge_adjacent_bold(
     i = 0
     while i + 2 < len(out):
         a, mid, c = out[i], out[i + 1], out[i + 2]
-        if (
-            a[2]
-            and c[2]
-            and not mid[2]
-            and a[1] == mid[1] == c[1]
-            and a[3] == c[3]
-            and mid[0].strip() == ""
-        ):
+        if a[2] and c[2] and not mid[2] and a[1] == mid[1] == c[1] and a[3] == c[3] and mid[0].strip() == "":
             out[i] = (a[0] + mid[0] + c[0], a[1], True, a[3])
             del out[i + 1 : i + 3]
             continue
@@ -136,7 +129,7 @@ def _styled_token(tok: tuple[str, str | None, bool, bool]) -> str:
     if bold:
         stripped = text.strip()
         prefix = text[: len(text) - len(text.lstrip())]
-        suffix = text[len(text.rstrip()):]
+        suffix = text[len(text.rstrip()) :]
         return f"{prefix}**{stripped}**{suffix}"
     return text
 

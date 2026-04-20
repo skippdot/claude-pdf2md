@@ -33,8 +33,17 @@ def test_link_text_wraps_exact_phrase(tmp_path):
         tmp_path / "t.pdf",
         [
             {"text": "See the report ", "x": 72, "y": 120},
-            {"text": "here", "x": 72 + fitz.get_text_length("See the report ", fontname="Helvetica", fontsize=12), "y": 120, "uri": "https://example.com/report"},
-            {"text": " for details.", "x": 72 + fitz.get_text_length("See the report here", fontname="Helvetica", fontsize=12), "y": 120},
+            {
+                "text": "here",
+                "x": 72 + fitz.get_text_length("See the report ", fontname="Helvetica", fontsize=12),
+                "y": 120,
+                "uri": "https://example.com/report",
+            },
+            {
+                "text": " for details.",
+                "x": 72 + fitz.get_text_length("See the report here", fontname="Helvetica", fontsize=12),
+                "y": 120,
+            },
         ],
     )
     md = convert_to_string(pdf, include_title=False)

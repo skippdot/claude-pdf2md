@@ -91,11 +91,7 @@ def markdown_to_pdf_bytes(
 
 
 def _wrap_html(body_html: str) -> str:
-    return (
-        "<!doctype html><html><head><meta charset='utf-8'></head><body>"
-        + body_html
-        + "</body></html>"
-    )
+    return "<!doctype html><html><head><meta charset='utf-8'></head><body>" + body_html + "</body></html>"
 
 
 def _default_css(page_size: tuple[int, int] | None) -> str:
@@ -109,9 +105,7 @@ def _default_css(page_size: tuple[int, int] | None) -> str:
     else:
         size_rule = "size: A4"
     return (
-        "@page { "
-        + size_rule
-        + "; margin: 15mm; } "
+        "@page { " + size_rule + "; margin: 15mm; } "
         "body { font-family: Georgia, 'DejaVu Serif', serif; font-size: 11pt; line-height: 1.45; color: #111; } "
         "h1 { font-size: 20pt; margin-top: 0; } "
         "h2 { font-size: 15pt; } "

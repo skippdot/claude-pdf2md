@@ -54,3 +54,7 @@ addopts = "-ra -q"
 markers = [
     "roundtrip: MD→PDF→MD fidelity tests (require WeasyPrint).",
 ]
+
+[tool.black]
+line-length = 120
+target-version = ["py310", "py311", "py312"]

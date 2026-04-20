@@ -362,6 +362,7 @@ def _find_pill_host(candidates: list[Block], pill: Block) -> Block | None:
         def score(b: Block) -> tuple[int, float]:
             covers_x = int(b.bbox.x0 <= pill.bbox.x0 and pill.bbox.x1 <= b.bbox.x1)
             return (-covers_x, b.bbox.width)
+
         containing.sort(key=score)
         return containing[0]
     # Pill sits above or below all hostable blocks: fall back to the closest

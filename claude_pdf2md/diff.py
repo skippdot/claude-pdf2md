@@ -52,10 +52,5 @@ def _box_filter(img: np.ndarray, win: int) -> np.ndarray:
     # sums can be indexed without wrap-around.
     integral = np.zeros((H + 1, W + 1), dtype=np.float64)
     integral[1:, 1:] = np.cumsum(np.cumsum(padded, axis=0), axis=1)
-    s = (
-        integral[k:, k:]
-        - integral[:-k, k:]
-        - integral[k:, :-k]
-        + integral[:-k, :-k]
-    )
+    s = integral[k:, k:] - integral[:-k, k:] - integral[k:, :-k] + integral[:-k, :-k]
     return (s / (k * k)).astype(np.float32)

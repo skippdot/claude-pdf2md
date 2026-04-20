@@ -200,9 +200,7 @@ def test_multi_line_pill_cluster_is_split_and_absorbed():
         assert url in md, f"pill {url} was dropped"
     # And the pills must be inlined (no standalone "[Two](...)\n\n[Three]..." pair).
     lines = [ln.strip() for ln in md.splitlines() if ln.strip()]
-    standalone_pill_lines = [
-        ln for ln in lines if ln.startswith("[") and "Host paragraph" not in ln
-    ]
+    standalone_pill_lines = [ln for ln in lines if ln.startswith("[") and "Host paragraph" not in ln]
     assert not standalone_pill_lines, f"pills left dangling: {standalone_pill_lines}"
 
 
