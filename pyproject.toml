@@ -62,3 +62,19 @@ markers = [
 [tool.black]
 line-length = 120
 target-version = ["py310", "py311", "py312"]
+
+[tool.coverage.run]
+source = ["claude_pdf2md"]
+branch = true
+omit = ["claude_pdf2md/__main__.py"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
