@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import io
 import json
 from pathlib import Path
 
@@ -126,7 +125,10 @@ def _resize_to_width(img: Image.Image, target_w: int) -> Image.Image:
     if img.width == target_w:
         return img
     ratio = target_w / img.width
-    return img.resize((target_w, max(1, int(img.height * ratio))), Image.LANCZOS)
+    return img.resize(
+        (target_w, max(1, int(img.height * ratio))),
+        Image.LANCZOS,  # pylint: disable=no-member
+    )
 
 
 def _pad_or_crop_height(img: Image.Image, target_h: int) -> Image.Image:

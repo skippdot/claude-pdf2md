@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 
-from .model import BBox, Block, Doc, Line, Page
+from .model import BBox, Block, Doc, Line, Span
 
 _BULLET_PREFIX = re.compile(r"^\s*([\u2022\u25E6\u25AA\u25CF\u2023\u2043\u204C\u204D\u00B7\-\–\*])\s+")
 _ORDERED_PREFIX = re.compile(r"^\s*(\d{1,3})[\.\)]\s+")
@@ -183,8 +183,6 @@ def _find_marker_partner(blocks: list[Block], marker_idx: int, used: set[int]) -
 
 
 def _zip_marker_and_text(marker_block: Block, text_block: Block) -> list[Block]:
-    from .model import Span
-
     out: list[Block] = []
     for m_line, t_line in zip(marker_block.lines, text_block.lines):
         marker_text = m_line.text.strip()
@@ -391,8 +389,6 @@ def _insert_pill_into_host(host: Block, pill: Block) -> None:
     line_idx = _closest_line_idx(host, pill.bbox)
     target_line = host.lines[line_idx]
     insert_at = _insert_position(target_line, pill.bbox)
-
-    from .model import Span
 
     tail_like = pill_spans[-1]
     spacer = Span(

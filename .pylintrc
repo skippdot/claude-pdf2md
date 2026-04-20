@@ -1,0 +1,38 @@
+[MAIN]
+# PyMuPDF (fitz) and Pillow are C extensions; pylint can't introspect them.
+extension-pkg-allow-list=fitz,PIL
+generated-members=fitz.*,PIL.Image.*,metadata,page_count,load_page
+
+[FORMAT]
+max-line-length=120
+
+[MESSAGES CONTROL]
+# The project style keeps docstrings sparse by design — identifiers and
+# short block comments carry the intent. We disable docstring checks to
+# avoid drowning real signal in noise.
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    too-many-instance-attributes,
+    too-many-locals,
+    too-many-return-statements,
+    too-many-branches,
+    too-many-statements,
+    too-many-arguments,
+    too-many-boolean-expressions,
+    too-many-nested-blocks,
+    too-many-positional-arguments,
+    import-outside-toplevel,
+    fixme,
+    duplicate-code
+
+[DESIGN]
+max-attributes=12
+
+[SIMILARITIES]
+min-similarity-lines=8
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes

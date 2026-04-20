@@ -18,9 +18,9 @@ def ssim(a: np.ndarray, b: np.ndarray, win_size: int = 11) -> float:
     # Single-scale SSIM on luma with a uniform box kernel — sufficient for the
     # "does my markdown render roughly like the PDF" quality gate. For
     # reference-grade work, use skimage's gaussian-windowed SSIM instead.
-    k1, k2, L = 0.01, 0.03, 255.0
-    c1 = (k1 * L) ** 2
-    c2 = (k2 * L) ** 2
+    k1, k2, luma_range = 0.01, 0.03, 255.0
+    c1 = (k1 * luma_range) ** 2
+    c2 = (k2 * luma_range) ** 2
 
     a = a.astype(np.float32)
     b = b.astype(np.float32)
@@ -47,10 +47,10 @@ def _box_filter(img: np.ndarray, win: int) -> np.ndarray:
     k = win
     pad = k // 2
     padded = np.pad(img.astype(np.float64), pad, mode="edge")
-    H, W = padded.shape
+    height, width = padded.shape
     # Standard summed-area table trick: prepend a zero row/col so rectangle
     # sums can be indexed without wrap-around.
-    integral = np.zeros((H + 1, W + 1), dtype=np.float64)
+    integral = np.zeros((height + 1, width + 1), dtype=np.float64)
     integral[1:, 1:] = np.cumsum(np.cumsum(padded, axis=0), axis=1)
     s = integral[k:, k:] - integral[:-k, k:] - integral[k:, :-k] + integral[:-k, :-k]
     return (s / (k * k)).astype(np.float32)

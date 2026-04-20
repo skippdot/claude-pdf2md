@@ -29,7 +29,8 @@ def _uri_for(ch: BBox, links: list[LinkAnnot]) -> str | None:
             if lb.x0 <= ch.cx <= lb.x1 and lb.y0 <= ch.cy <= lb.y1:
                 return link.uri
         return None
-    best: tuple[float, str] | None = None
+    best_ratio = -1.0
+    best_uri: str | None = None
     for link in links:
         inter = ch.intersect(link.bbox)
         if inter <= 0:
@@ -37,6 +38,7 @@ def _uri_for(ch: BBox, links: list[LinkAnnot]) -> str | None:
         ratio = inter / area
         if ratio < 0.5:
             continue
-        if best is None or ratio > best[0]:
-            best = (ratio, link.uri)
-    return best[1] if best else None
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_uri = link.uri
+    return best_uri

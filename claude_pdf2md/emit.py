@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from .model import Block, Doc, Line, Span
+from .model import Block, Doc, Line
 from .structure import strip_list_marker
 
 _SOFT_HYPHEN_RE = re.compile(r"(\w)-\s*$")

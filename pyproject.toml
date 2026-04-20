@@ -35,6 +35,10 @@ diff = [
 ]
 dev = [
     "pytest>=7.4",
+    "pytest-cov>=5.0",
+    "black>=24.0",
+    "pylint>=3.0",
+    "bandit>=1.7",
     "claude-pdf2md[diff]",
 ]
 
