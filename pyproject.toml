@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "claude-pdf2md"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Convert PDFs (especially Claude Web UI research exports) to Markdown with hyperlinks and visual structure preserved."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -45,9 +45,20 @@ dev = [
 [project.scripts]
 claude-pdf2md = "claude_pdf2md.cli:main"
 
+[tool.claude-pdf2md.release]
+# Usage:
+#   python scripts/bump_version.py patch --commit   # 0.1.0 -> 0.1.1 + tag
+#   python scripts/bump_version.py minor --commit   # 0.1.0 -> 0.2.0 + tag
+#   python scripts/bump_version.py major --commit   # 0.1.0 -> 1.0.0 + tag
+#   python scripts/bump_version.py set 1.2.3        # pin explicit
+#   python scripts/bump_version.py show             # print current
+
 [project.urls]
 Homepage = "https://github.com/skippdot/claude-pdf2md"
 Issues = "https://github.com/skippdot/claude-pdf2md/issues"
+
+[tool.hatch.version]
+path = "claude_pdf2md/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["claude_pdf2md"]
