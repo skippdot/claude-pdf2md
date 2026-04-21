@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "claude-pdf2md-ocr"
+version = "0.0.1"
+description = "OCR plugin for claude-pdf2md — recognise text in scanned PDFs via Tesseract (and other backends) and feed it into the existing PDF→Markdown pipeline."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "skippdot", email = "skippdot@gmail.com" }]
+keywords = ["pdf", "markdown", "ocr", "tesseract", "claude", "scanned"]
+dependencies = [
+    "claude-pdf2md>=0.1.1",
+    "pytesseract>=0.3.10",
+    "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+claude-pdf2md-ocr = "claude_pdf2md_ocr.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["claude_pdf2md_ocr"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "PL", "RUF"]
+ignore = [
+    "PLC0415",
+    "PLR0911",
+    "PLR0913", # too-many-arguments — CLI entry point and convert_with_ocr legitimately carry many knobs.
+    "PLR0914",
+    "PLR0916",
+    "PLR2004",
+    "RUF001", # ambiguous unicode in strings — we use en-dash for ranges in help text.
+    "RUF003", # ambiguous unicode in comments — same reason.
+]

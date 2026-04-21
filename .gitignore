@@ -11,3 +11,10 @@ dist/
 *.diff.png
 .vscode/
 .idea/
+
+# Conversion output artifacts from local ad-hoc runs
+output*.md
+ocr_output*.md
+assets*/
+ocr_assets*/
+diff*/
