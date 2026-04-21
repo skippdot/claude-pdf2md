@@ -17,9 +17,10 @@ import fitz
 from claude_pdf2md import emit, extract, images, structure, tables
 from claude_pdf2md.model import Doc, ImageAnnot, Page
 
-from .backends import OcrBackend
+from .backends import OcrBackend, OcrWord
 from .backends.tesseract import TesseractBackend
 from .inject import words_to_blocks
+from .spellcheck import fix_word, languages_for
 
 _DEFAULT_DPI = 200  # Tesseract's sweet spot for small body text on A4 scans.
 
@@ -34,6 +35,7 @@ def convert_with_ocr(
     min_confidence: float = 0.5,
     backend: OcrBackend | None = None,
     dpi: int = _DEFAULT_DPI,
+    spellcheck: bool = True,
 ) -> str:
     backend = backend or TesseractBackend()
     pdf_path = str(pdf_path)
@@ -41,7 +43,7 @@ def convert_with_ocr(
 
     mu, doc = extract.extract_doc(pdf_path)
     try:
-        _run_ocr(mu, doc, backend, lang, dpi, min_confidence, only_empty_pages)
+        _run_ocr(mu, doc, backend, lang, dpi, min_confidence, only_empty_pages, spellcheck)
         tables.apply_tables(mu, doc)
         images.write_assets(doc, assets_path)
         structure.analyze_document(doc)
@@ -62,6 +64,7 @@ def _run_ocr(
     dpi: int,
     min_confidence: float,
     only_empty_pages: bool,
+    spellcheck: bool,
 ) -> None:
     for pno, page in enumerate(doc.pages):
         if only_empty_pages and _has_text(page):
@@ -77,6 +80,8 @@ def _run_ocr(
         )
         if not words:
             continue
+        if spellcheck:
+            words = _apply_spellcheck(words)
         page.blocks = words_to_blocks(words, min_confidence=min_confidence)
         # Preserve inline images (logos, stamps, QR codes) but drop whole-page
         # rasters — on an OCR'd page those are just a picture of the same text
@@ -85,6 +90,31 @@ def _run_ocr(
         # turned them into image-kind Blocks yet; doing it here keeps the
         # assets directory free of the redundant full-page PNG as well.
         page.images = [img for img in page.images if not _is_whole_page_image(img, page)]
+
+
+def _apply_spellcheck(words: list[OcrWord]) -> list[OcrWord]:
+    """Per-page cross-script and known-misread fixup.
+
+    We look at the whole page's OCR output to pick a per-page dominant-language
+    tuple, then run each word through `fix_word`. A word only gets replaced when
+    the correction is both cross-script-distinguishable AND a valid entry in the
+    target-language frequency dictionary — so proper nouns, product names, IDs,
+    and numeric tokens flow through unchanged.
+    """
+    page_text = " ".join(w.text for w in words)
+    langs = languages_for(page_text)
+    return [
+        OcrWord(
+            text=fix_word(w.text, langs),
+            x0=w.x0,
+            y0=w.y0,
+            x1=w.x1,
+            y1=w.y1,
+            confidence=w.confidence,
+            line_id=w.line_id,
+        )
+        for w in words
+    ]
 
 
 def _is_whole_page_image(img: ImageAnnot, page: Page) -> bool:

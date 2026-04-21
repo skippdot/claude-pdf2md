@@ -32,6 +32,13 @@ def main(argv: list[str] | None = None) -> int:
         "keeping real content on Ukrainian/English/Czech legal scans.",
     )
     parser.add_argument("--dpi", type=int, default=200, help="Rasterisation DPI for Tesseract input")
+    parser.add_argument(
+        "--no-spellcheck",
+        dest="spellcheck",
+        action="store_false",
+        default=True,
+        help="Disable cross-script / known-misread post-OCR fixup (spellcheck is on by default).",
+    )
     parser.add_argument("--with-title", action="store_true", help="Emit PDF metadata title as an H1 heading")
     args = parser.parse_args(argv)
 
@@ -48,6 +55,7 @@ def main(argv: list[str] | None = None) -> int:
         only_empty_pages=not args.all_pages,
         min_confidence=args.min_confidence,
         dpi=args.dpi,
+        spellcheck=args.spellcheck,
     )
     if args.output is None:
         sys.stdout.write(md)

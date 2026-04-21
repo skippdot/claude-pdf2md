@@ -15,6 +15,7 @@ dependencies = [
     "claude-pdf2md>=0.1.1",
     "pytesseract>=0.3.10",
     "Pillow>=10.0",
+    "wordfreq>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -43,5 +44,6 @@ ignore = [
     "PLR0916",
     "PLR2004",
     "RUF001", # ambiguous unicode in strings — we use en-dash for ranges in help text.
+    "RUF002", # ambiguous unicode in docstrings — the `spellcheck` module deliberately discusses Cyrillic/Latin confusables.
     "RUF003", # ambiguous unicode in comments — same reason.
 ]
