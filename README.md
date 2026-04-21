@@ -51,6 +51,40 @@ Python 3.10+ required. Core depends on PyMuPDF, NumPy, Pillow. The `[diff]`
 extra adds `markdown-it-py` and `weasyprint` (which in turn needs cairo/pango
 on the host; see WeasyPrint's install notes).
 
+### Windows
+
+```powershell
+# 1. Python 3.10+ from python.org (tick "Add Python to PATH" during install)
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+
+# 2. Core install — pure Python with pre-built wheels, no system deps
+pip install claude-pdf2md
+
+# 3. (optional) [diff] extra — needs GTK for WeasyPrint
+#    Install "GTK3 runtime" from https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases
+#    then:
+pip install 'claude-pdf2md[diff]'
+```
+
+Verify:
+
+```powershell
+claude-pdf2md --help
+```
+
+### macOS / Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install claude-pdf2md              # or 'claude-pdf2md[diff]'
+```
+
+On Linux, the `[diff]` extra additionally needs `libpango-1.0-0`,
+`libpangoft2-1.0-0`, `libharfbuzz0b`, and `fonts-dejavu` (Debian/Ubuntu names;
+see WeasyPrint's docs for other distributions).
+
 ## CLI
 
 ```bash
@@ -84,6 +118,25 @@ md = convert(
     assets_dir="assets",
 )
 ```
+
+### Plugins via `enrichers=`
+
+As of **0.1.2**, `convert()` / `convert_to_string()` accept an `enrichers`
+list. Each enricher is a lightweight Protocol implementation:
+
+```python
+class PageEnricher(Protocol):
+    def enrich(self, mu_page, page) -> None: ...
+```
+
+Enrichers run once per page right after text extraction and before tables /
+images / structure / emit, so they can mutate `page.blocks` (add recognised
+OCR lines, mark up signatures, drop boilerplate, …) and every downstream
+pass treats the result exactly like native text.
+
+The canonical use of this hook is [`claude-pdf2md-ocr`](https://github.com/skippdot/claude-pdf2md-ocr),
+which turns scanned PDFs into Markdown by feeding Tesseract output through
+the enricher.
 
 ## How it works
 
