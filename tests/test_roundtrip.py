@@ -216,9 +216,9 @@ Closing paragraph after the table.
     md = convert_to_string(pdf)
 
     table_lines = [ln for ln in md.splitlines() if ln.strip().startswith("|")]
-    assert any(
-        "Party" in ln and "Percent" in ln and "Seats" in ln for ln in table_lines
-    ), f"header row missing from roundtripped table: {table_lines}"
+    assert any("Party" in ln and "Percent" in ln and "Seats" in ln for ln in table_lines), (
+        f"header row missing from roundtripped table: {table_lines}"
+    )
     joined = "\n".join(table_lines)
     for party in ("Alpha", "Beta", "Gamma"):
         assert party in joined

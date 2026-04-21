@@ -59,7 +59,7 @@ def main(argv: list[str] | None = None) -> int:
 
         report = render_diff(args.pdf, md, args.diff)
         print(
-            f"diff: {len(report['pages'])} pages, " f"mean SSIM={report['mean_ssim']:.3f}, " f"written to {args.diff}",
+            f"diff: {len(report['pages'])} pages, mean SSIM={report['mean_ssim']:.3f}, written to {args.diff}",
             file=sys.stderr,
         )
     return 0

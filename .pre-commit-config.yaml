@@ -7,19 +7,18 @@
 repos:
   - repo: local
     hooks:
-      - id: black
-        name: Run black (format check)
-        entry: black --check --diff
+      - id: ruff-format
+        name: Run ruff format (check mode)
+        entry: ruff format --check --diff
         language: system
         types: [python]
         files: '^(claude_pdf2md|tests)/.*\.py$'
-      - id: pylint
-        name: Run pylint (fail under 10.00)
-        entry: pylint
+      - id: ruff-check
+        name: Run ruff check (lint)
+        entry: ruff check
         language: system
         types: [python]
         files: '^claude_pdf2md/.*\.py$'
-        args: [--rcfile=.pylintrc, --fail-under=10]
       - id: bandit
         name: Run bandit (security, -ll)
         entry: bandit -r claude_pdf2md -ll

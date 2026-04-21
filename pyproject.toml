@@ -38,8 +38,7 @@ diff = [
 dev = [
     "pytest>=7.4",
     "pytest-cov>=5.0",
-    "black>=24.0",
-    "pylint>=3.0",
+    "ruff>=0.6",
     "bandit>=1.7",
     "pre-commit>=3.7",
     "claude-pdf2md[diff]",
@@ -73,9 +72,31 @@ markers = [
     "roundtrip: MD→PDF→MD fidelity tests (require WeasyPrint).",
 ]
 
-[tool.black]
+[tool.ruff]
 line-length = 120
-target-version = ["py310", "py311", "py312", "py313", "py314"]
+target-version = "py310"
+
+[tool.ruff.lint]
+# E/F/W: pycodestyle + pyflakes baseline.
+# I: import sorting (isort).
+# B: flake8-bugbear (real bug patterns).
+# UP: pyupgrade (idiomatic modern Python).
+# PL: pylint-ported rules (covers what .pylintrc used to enforce).
+# RUF: ruff-native rules.
+# Note: `S` (bandit-port) is intentionally NOT selected — bandit runs as its
+# own CI job and owns security scanning end-to-end.
+# Note: `D` (pydocstyle) is NOT selected — project style keeps docstrings sparse.
+select = ["E", "F", "W", "I", "B", "UP", "PL", "RUF"]
+ignore = [
+    "PLC0415", # import-outside-toplevel — weasyprint/markdown_it are lazy-loaded from the [diff] extra.
+    "PLR0911", # too-many-return-statements — dense state machines in structure.py / emit.py.
+    "PLR0914", # too-many-locals — same.
+    "PLR0916", # too-many-boolean-expressions — classification predicates in emit.py.
+    "PLR2004", # magic-value-comparison — numeric layout thresholds (pt, ratios) are clearer inline.
+    "RUF001", # ambiguous unicode — bullet/dash regex character classes intentionally include en-dash.
+]
+# Note: ruff does not implement PLR0902 (too-many-instance-attributes), so the
+# `Block` dataclass's 9 fields don't need a threshold override the way pylint did.
 
 [tool.coverage.run]
 source = ["claude_pdf2md"]

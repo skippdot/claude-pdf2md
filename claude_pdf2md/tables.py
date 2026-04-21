@@ -49,7 +49,7 @@ def _replace_blocks_inside(blocks: list[Block], bbox: BBox, new_block: Block) ->
         out.append(b)
     if not inserted:
         out.append(new_block)
-        out.sort(key=lambda bl: (bl.bbox.y0 if bl.bbox else 0.0))
+        out.sort(key=lambda bl: bl.bbox.y0 if bl.bbox else 0.0)
     return out
 
 

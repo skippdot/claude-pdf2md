@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from itertools import pairwise
 
 from .model import BBox, Block, Doc, Line, Span
 
@@ -173,7 +174,7 @@ def _find_marker_partner(blocks: list[Block], marker_idx: int, used: set[int]) -
         if len(cand.lines) != len(marker.lines):
             continue
         aligned = True
-        for ml, cl in zip(marker.lines, cand.lines):
+        for ml, cl in zip(marker.lines, cand.lines, strict=True):
             if abs(ml.bbox.y0 - cl.bbox.y0) > 2.0:
                 aligned = False
                 break
@@ -184,7 +185,7 @@ def _find_marker_partner(blocks: list[Block], marker_idx: int, used: set[int]) -
 
 def _zip_marker_and_text(marker_block: Block, text_block: Block) -> list[Block]:
     out: list[Block] = []
-    for m_line, t_line in zip(marker_block.lines, text_block.lines):
+    for m_line, t_line in zip(marker_block.lines, text_block.lines, strict=True):
         marker_text = m_line.text.strip()
         if not marker_text:
             continue
@@ -268,7 +269,7 @@ def _is_row_block(block: Block) -> bool:
     if span_y > avg_h * 1.6:
         return False
     xs = sorted((ln.bbox.x0, ln.bbox.x1) for ln in block.lines)
-    for (_, x1a), (x0b, _) in zip(xs, xs[1:]):
+    for (_, x1a), (x0b, _) in pairwise(xs):
         if x0b < x1a - 1:
             return False
     return True

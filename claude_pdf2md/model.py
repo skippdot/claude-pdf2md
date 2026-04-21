@@ -37,7 +37,7 @@ class BBox:
     def cy(self) -> float:
         return (self.y0 + self.y1) / 2
 
-    def intersect(self, other: "BBox") -> float:
+    def intersect(self, other: BBox) -> float:
         ix0 = max(self.x0, other.x0)
         iy0 = max(self.y0, other.y0)
         ix1 = min(self.x1, other.x1)
@@ -46,7 +46,7 @@ class BBox:
             return 0.0
         return (ix1 - ix0) * (iy1 - iy0)
 
-    def overlaps(self, other: "BBox", min_ratio: float = 0.5) -> bool:
+    def overlaps(self, other: BBox, min_ratio: float = 0.5) -> bool:
         a = self.width * self.height
         if a <= 0:
             return False

@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint (Black + PyLint)
+    name: Lint (Ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,14 +20,14 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - name: Install project + dev deps
+      - name: Install Ruff
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-      - name: Black (check mode)
-        run: black --check --diff claude_pdf2md tests
-      - name: PyLint
-        run: pylint claude_pdf2md
+          pip install ruff
+      - name: Ruff format (check mode)
+        run: ruff format --check --diff claude_pdf2md tests
+      - name: Ruff check
+        run: ruff check claude_pdf2md
 
   security:
     name: Security (Bandit)
