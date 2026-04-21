@@ -26,8 +26,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--min-confidence",
         type=float,
-        default=0.3,
-        help="Drop words with Tesseract confidence below this threshold (0.0–1.0)",
+        default=0.5,
+        help="Drop words with Tesseract confidence below this threshold (0.0–1.0). "
+        "Empirically 0.5 strips noise tokens (logo glyphs, stray marks) while "
+        "keeping real content on Ukrainian/English/Czech legal scans.",
     )
     parser.add_argument("--dpi", type=int, default=200, help="Rasterisation DPI for Tesseract input")
     parser.add_argument("--with-title", action="store_true", help="Emit PDF metadata title as an H1 heading")

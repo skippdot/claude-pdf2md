@@ -31,7 +31,7 @@ def convert_with_ocr(
     include_title: bool = False,
     lang: str = "ukr+rus+eng",
     only_empty_pages: bool = True,
-    min_confidence: float = 0.3,
+    min_confidence: float = 0.5,
     backend: OcrBackend | None = None,
     dpi: int = _DEFAULT_DPI,
 ) -> str:
