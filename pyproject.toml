@@ -90,6 +90,7 @@ select = ["E", "F", "W", "I", "B", "UP", "PL", "RUF"]
 ignore = [
     "PLC0415", # import-outside-toplevel — weasyprint/markdown_it are lazy-loaded from the [diff] extra.
     "PLR0911", # too-many-return-statements — dense state machines in structure.py / emit.py.
+    "PLR0913", # too-many-arguments — `convert` / `convert_to_string` are the public API surface; extra kwargs are the point.
     "PLR0914", # too-many-locals — same.
     "PLR0916", # too-many-boolean-expressions — classification predicates in emit.py.
     "PLR2004", # magic-value-comparison — numeric layout thresholds (pt, ratios) are clearer inline.

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 from . import emit, extract, images, structure, tables
+from .validate import PdfStructureWarning, validate_doc
 
 if TYPE_CHECKING:
     import fitz
@@ -34,12 +36,14 @@ def convert(
     assets_dir: str | Path | None = None,
     include_title: bool = False,
     enrichers: list[PageEnricher] | None = None,
+    validate: bool = False,
 ) -> str:
     md = convert_to_string(
         pdf_path,
         assets_dir=assets_dir,
         include_title=include_title,
         enrichers=enrichers,
+        validate=validate,
     )
     if output is not None:
         Path(output).write_text(md, encoding="utf-8")
@@ -51,6 +55,7 @@ def convert_to_string(
     assets_dir: str | Path | None = None,
     include_title: bool = False,
     enrichers: list[PageEnricher] | None = None,
+    validate: bool = False,
 ) -> str:
     pdf_path = str(pdf_path)
     assets_path = Path(assets_dir) if assets_dir is not None else None
@@ -65,6 +70,14 @@ def convert_to_string(
         tables.apply_tables(mu, doc)
         images.write_assets(doc, assets_path)
         structure.analyze_document(doc)
+        if validate:
+            for issue in validate_doc(doc):
+                page_label = f"page {issue.page_number}" if issue.page_number is not None else "document"
+                warnings.warn(
+                    f"[{issue.code}] {page_label}: {issue.message}",
+                    PdfStructureWarning,
+                    stacklevel=2,
+                )
         return emit.render(doc, include_title=include_title)
     finally:
         mu.close()

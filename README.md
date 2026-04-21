@@ -138,6 +138,43 @@ The canonical use of this hook is [`claude-pdf2md-ocr`](https://github.com/skipp
 which turns scanned PDFs into Markdown by feeding Tesseract output through
 the enricher.
 
+### Structural validation
+
+`convert(validate=True)` runs a post-pipeline sanity pass and emits a
+`PdfStructureWarning` for each issue it finds:
+
+```python
+import warnings
+from claude_pdf2md import PdfStructureWarning, convert
+
+with warnings.catch_warnings(record=True) as caught:
+    warnings.simplefilter("always")
+    convert("scan.pdf", output="scan.md", validate=True)
+
+for w in caught:
+    if issubclass(w.category, PdfStructureWarning):
+        print(w.message)
+```
+
+Current checks: empty page, image-only page (likely un-OCR'd scan —
+nudges toward `claude-pdf2md-ocr`), heading-level jumps (e.g. H1 → H3
+with no H2 in between). Validation is opt-in and silent on a clean
+native PDF.
+
+## Alternatives
+
+If you need PDF → Markdown but want a different set of trade-offs:
+
+- **[`pdf2md-claude`](https://github.com/hacker-cb/pdf2md-claude)** — runs
+  the PDF through Claude's native-PDF API in ~10-page chunks with
+  context carry-over, rebuilds tables with extended thinking, and
+  reinjects figures from bounding boxes. Higher fidelity on complex
+  layouts, but requires an Anthropic API key, costs per conversion, and
+  doesn't work offline. `claude-pdf2md` is the opposite trade: local,
+  deterministic, free, fast — and keeps 100% hyperlink recall by reading
+  the PDF's link annotations directly rather than asking a model to
+  re-discover them.
+
 ## How it works
 
 The pipeline (one pass through the PDF, no external OCR):
