@@ -7,10 +7,16 @@ on:
 
 jobs:
   build-and-release:
-    name: Build + GitHub Release
+    name: Build + Publish to PyPI + GitHub Release
     runs-on: ubuntu-latest
+    # `id-token: write` enables PyPI Trusted Publishing (OIDC — no API token secret needed).
+    # `contents: write` lets softprops/action-gh-release create the GitHub Release.
     permissions:
       contents: write
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/claude-pdf2md
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,6 +39,8 @@ jobs:
         run: python -m build
       - name: Twine metadata check
         run: twine check dist/*
+      - name: Publish to PyPI (Trusted Publisher / OIDC)
+        uses: pypa/gh-action-pypi-publish@release/v1
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
