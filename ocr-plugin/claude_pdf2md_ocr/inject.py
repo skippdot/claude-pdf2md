@@ -1,31 +1,39 @@
 """Turn OCR words into `claude_pdf2md.model` Blocks/Lines/Spans.
 
-`structure.analyze_document` downstream expects blocks with lines whose bboxes
-are consistent — y0/y1 bounded by the line's word extrema, x0/x1 spanning the
-leftmost to rightmost word. Font size is approximated as the bbox height
-(good enough; the structure module only uses it to discriminate body vs.
-heading tiers and OCR pages rarely have reliable font metrics anyway)."""
+`structure.analyze_document` downstream compares each block's dominant
+font size against document-wide body size (mode) and heading-size buckets
+(≥ 1.10× body). Naively using per-word bbox height as the span size makes
+body text look like a forest of tiny heading tiers, because bbox height
+fluctuates with the letters present (descenders / ascenders / caps).
+
+We sidestep that by quantising every OCR word on a page to a single
+per-page "body" size — the median of word heights, rounded to the nearest
+half-point — while genuinely tall lines (titles at least 1.2× the median)
+keep their measured height so real headings still get promoted by the
+downstream analyser.
+"""
 
 from __future__ import annotations
+
+from statistics import median
 
 from claude_pdf2md.model import BBox, Block, Line, Span
 
 from .backends import OcrWord
 
+_HEADING_RATIO = 1.2  # Keep a word's real size only when it clearly exceeds the page body size.
+
 
 def words_to_blocks(words: list[OcrWord], min_confidence: float = 0.0) -> list[Block]:
-    """Group OCR words into Lines (by `line_id`) and one Block per line.
+    """Group OCR words into Lines (by `line_id`) and one Block per line."""
+    kept = [w for w in words if w.confidence >= min_confidence]
+    if not kept:
+        return []
 
-    We emit one paragraph-kind Block per line, letting the existing
-    `structure.analyze_document` post-pass merge consecutive lines into
-    paragraphs and detect headings by size. Giving the structure pass a list
-    of single-line blocks is what the text-layer extractor does too, so the
-    downstream behavior is the same.
-    """
+    body_size = _page_body_size(kept)
+
     by_line: dict[int, list[OcrWord]] = {}
-    for w in words:
-        if w.confidence < min_confidence:
-            continue
+    for w in kept:
         by_line.setdefault(w.line_id, []).append(w)
 
     blocks: list[Block] = []
@@ -45,7 +53,8 @@ def words_to_blocks(words: list[OcrWord], min_confidence: float = 0.0) -> list[B
         spans: list[Span] = []
         for idx, w in enumerate(line_words):
             tail = " " if idx < len(line_words) - 1 else ""
-            size = w.y1 - w.y0
+            raw_size = w.y1 - w.y0
+            size = raw_size if raw_size >= body_size * _HEADING_RATIO else body_size
             spans.append(
                 Span(
                     text=w.text + tail,
@@ -60,3 +69,12 @@ def words_to_blocks(words: list[OcrWord], min_confidence: float = 0.0) -> list[B
         line = Line(spans=spans, bbox=line_bbox)
         blocks.append(Block(kind="paragraph", lines=[line], bbox=line_bbox))
     return blocks
+
+
+def _page_body_size(words: list[OcrWord]) -> float:
+    """Median word-height for the page, rounded to the nearest 0.5 pt."""
+    heights = [w.y1 - w.y0 for w in words if w.y1 > w.y0]
+    if not heights:
+        return 10.0
+    med = median(heights)
+    return round(med * 2) / 2

@@ -31,6 +31,19 @@ def test_special_char_fix_numero_sign():
     assert fix_word("Мо", langs) == "№"
 
 
+def test_special_char_regex_numero_sign_with_digits():
+    # Prefix-fused misreads: `Мо1224` / `Ме1085-р` → `№1224` / `№1085-р`.
+    langs = languages_for("розпорядженням Мо1224 від 2004 року")
+    assert fix_word("Мо1224", langs) == "№1224"
+    assert fix_word("Ме1085-р", langs) == "№1085-р"
+
+
+def test_special_char_regex_leaves_non_numero_alone():
+    langs = languages_for("Russian word Моя роль is fine.")
+    # Only trigger when digits follow — `Моя` stays `Моя`.
+    assert fix_word("Моя", langs) == "Моя"
+
+
 def test_iban_label_fixed():
     langs = languages_for("IBAN UA573808380000026505700276244 в АТ ПРАВЕКС БАНК")
     assert fix_word("ІВАМ", langs) == "IBAN"

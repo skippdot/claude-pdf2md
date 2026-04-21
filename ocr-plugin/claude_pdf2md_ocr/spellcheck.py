@@ -79,6 +79,11 @@ _SPEC_CHAR_FIXES: dict[str, str] = {
     "ІВАМ": "IBAN",  # Common header label on Ukrainian bank documents.
 }
 
+# Regex-level spec-char patterns. Apply when the misread is glued to a
+# digit suffix, e.g. `Мо1224` / `Ме1085` that should be `№1224` / `№1085`.
+# Only match token-leading pairs; never mid-word, to keep it conservative.
+_SPEC_CHAR_REGEXES: tuple[tuple[re.Pattern[str], str], ...] = ((re.compile(r"^М[еоo]([0-9].*)$"), r"№\1"),)
+
 # Frequency floor a word must clear to count as "in dictionary". Below this,
 # wordfreq returns essentially-noise entries (OCR artefacts the corpus saw
 # once and kept).
@@ -148,6 +153,11 @@ def fix_word(word: str, langs: tuple[str, ...]) -> str:
 
     if core in _SPEC_CHAR_FIXES:
         return head + _SPEC_CHAR_FIXES[core] + tail
+
+    for pattern, replacement in _SPEC_CHAR_REGEXES:
+        fixed = pattern.sub(replacement, core)
+        if fixed != core:
+            return head + fixed + tail
 
     # Count letters only. Embedded digits / dots (e.g. `п.7.7`, `v1.2`, `5g`)
     # shouldn't count toward the fixable-length threshold — single-letter
