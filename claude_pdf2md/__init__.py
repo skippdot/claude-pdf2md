@@ -3,4 +3,4 @@
 from .converter import PageEnricher, convert, convert_to_string
 
 __all__ = ["PageEnricher", "convert", "convert_to_string"]
-__version__ = "0.1.1"
+__version__ = "0.1.2"
