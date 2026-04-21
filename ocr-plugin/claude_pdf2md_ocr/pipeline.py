@@ -20,7 +20,13 @@ from claude_pdf2md.model import Doc, ImageAnnot, Page
 from .backends import OcrBackend, OcrWord
 from .backends.tesseract import TesseractBackend
 from .inject import words_to_blocks
-from .spellcheck import fix_word, languages_for
+from .spellcheck import detect_tesseract_lang, fix_word, languages_for
+
+_AUTO_LANG = "auto"
+# When the document has no text layer to sniff, hand Tesseract every pack we
+# ship support for. The downstream spellcheck pass then cleans up the
+# cross-script confusion that comes with a multi-language model.
+_FALLBACK_TESSERACT_LANG = "ukr+rus+eng+ces"
 
 _DEFAULT_DPI = 200  # Tesseract's sweet spot for small body text on A4 scans.
 
@@ -30,7 +36,7 @@ def convert_with_ocr(
     output: str | Path | None = None,
     assets_dir: str | Path | None = None,
     include_title: bool = False,
-    lang: str = "ukr+rus+eng",
+    lang: str = _AUTO_LANG,
     only_empty_pages: bool = True,
     min_confidence: float = 0.5,
     backend: OcrBackend | None = None,
@@ -43,7 +49,8 @@ def convert_with_ocr(
 
     mu, doc = extract.extract_doc(pdf_path)
     try:
-        _run_ocr(mu, doc, backend, lang, dpi, min_confidence, only_empty_pages, spellcheck)
+        resolved_lang = _resolve_lang(lang, doc)
+        _run_ocr(mu, doc, backend, resolved_lang, dpi, min_confidence, only_empty_pages, spellcheck)
         tables.apply_tables(mu, doc)
         images.write_assets(doc, assets_path)
         structure.analyze_document(doc)
@@ -90,6 +97,42 @@ def _run_ocr(
         # turned them into image-kind Blocks yet; doing it here keeps the
         # assets directory free of the redundant full-page PNG as well.
         page.images = [img for img in page.images if not _is_whole_page_image(img, page)]
+
+
+def _resolve_lang(lang: str, doc: Doc) -> str:
+    """Turn a user-supplied language value into a concrete Tesseract lang spec.
+
+    When the caller passes `"auto"` (the default), we sample the text layer
+    across all pages and let `detect_tesseract_lang` pick a narrow language
+    pair like `ces+eng`. A too-small sample (fully-scanned PDF with no text
+    layer) falls back to the broad `ukr+rus+eng+ces` mix so OCR still has
+    every relevant dictionary available — at the cost of script confusion
+    that the downstream spellcheck pass cleans up.
+    """
+    if lang != _AUTO_LANG:
+        return lang
+    sample = _collect_text_sample(doc)
+    detected = detect_tesseract_lang(sample)
+    return detected or _FALLBACK_TESSERACT_LANG
+
+
+def _collect_text_sample(doc: Doc, limit: int = 4000) -> str:
+    """Concatenate the existing text layer across pages, up to `limit` chars."""
+    parts: list[str] = []
+    size = 0
+    for page in doc.pages:
+        for block in page.blocks:
+            if block.kind == "image":
+                continue
+            for line in block.lines:
+                text = line.text.strip()
+                if not text:
+                    continue
+                parts.append(text)
+                size += len(text) + 1
+                if size >= limit:
+                    return "\n".join(parts)
+    return "\n".join(parts)
 
 
 def _apply_spellcheck(words: list[OcrWord]) -> list[OcrWord]:

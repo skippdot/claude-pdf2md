@@ -93,6 +93,17 @@ _MAX_FIX_LEN = 20
 
 _LANG_PRIORITY = ("en", "uk", "ru", "cs")
 
+# Map from the ISO-639-1 codes `dominant_language` returns to the Tesseract
+# three-letter language pack names. Extend as we grow support.
+_ISO_TO_TESSERACT: dict[str, str] = {
+    "en": "eng",
+    "uk": "ukr",
+    "ru": "rus",
+    "cs": "ces",
+}
+
+_FALLBACK_TESSERACT_LANG = "eng+ukr+rus+ces"
+
 
 def dominant_language(text: str) -> str:
     """Rough heuristic picking the document-level language code."""
@@ -190,3 +201,26 @@ def languages_for(text_sample: str) -> tuple[str, ...]:
     # For non-English main languages, check the main one first, then English,
     # to catch embedded foreign-language fragments.
     return (main, "en")
+
+
+def detect_tesseract_lang(text_sample: str, min_sample_chars: int = 60) -> str | None:
+    """Return the Tesseract `--lang` string implied by a text-layer sample.
+
+    Returns ``None`` if the sample is too short to make a confident call —
+    the caller should then fall back to a broad language mix so OCR still
+    has *some* dictionary to lean on.
+
+    Non-English documents get a two-pack spec like `ces+eng` because legal
+    / business PDFs regularly embed English URLs, product names and boilerplate
+    even when the body is Czech / Ukrainian / Russian.
+    """
+    clean = text_sample.strip()
+    if len(clean) < min_sample_chars:
+        return None
+    main = dominant_language(clean)
+    primary = _ISO_TO_TESSERACT.get(main)
+    if primary is None:
+        return None
+    if primary == "eng":
+        return "eng"
+    return f"{primary}+eng"

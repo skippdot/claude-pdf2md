@@ -67,3 +67,45 @@ def test_dominant_language_russian():
     # Cyrillic-only text without Ukrainian markers (і ї є ґ ʼ) should fall
     # through to Russian rather than misclassifying as Ukrainian.
     assert dominant_language("Это русский текст без характерных украинских букв.") == "ru"
+
+
+def test_detect_tesseract_lang_czech():
+    from claude_pdf2md_ocr.spellcheck import detect_tesseract_lang
+
+    # Enough Czech-marked body text — the return should include `ces` and
+    # also tack on `eng` for the English fragments found in the same files.
+    sample = (
+        "Potvrzuji, že jsem si přečetl Kodex chování společnosti Google, "
+        "porozuměl mu a budu se jím řídit při výkonu mých služeb. Kodexu "
+        "chování je podmínkou mého zaměstnání a jeho nedodržení může vést "
+        "k ukončení mého pracovního vztahu."
+    )
+    assert detect_tesseract_lang(sample) == "ces+eng"
+
+
+def test_detect_tesseract_lang_ukrainian():
+    from claude_pdf2md_ocr.spellcheck import detect_tesseract_lang
+
+    sample = (
+        "Договір страхування № C836SHU від 26.06.2025 р. місто Харків. "
+        "Страхувальник зобов'язаний повідомити Страховика про настання "
+        "страхового випадку протягом трьох робочих днів."
+    )
+    assert detect_tesseract_lang(sample) == "ukr+eng"
+
+
+def test_detect_tesseract_lang_returns_none_on_short_sample():
+    from claude_pdf2md_ocr.spellcheck import detect_tesseract_lang
+
+    assert detect_tesseract_lang("hi") is None
+    assert detect_tesseract_lang("") is None
+
+
+def test_detect_tesseract_lang_plain_english():
+    from claude_pdf2md_ocr.spellcheck import detect_tesseract_lang
+
+    sample = (
+        "This Agreement is governed by the laws of Czech Republic in which "
+        "I perform my assignment without giving effect to any choice of law."
+    )
+    assert detect_tesseract_lang(sample) == "eng"

@@ -17,7 +17,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("pdf", type=Path, help="Input PDF path")
     parser.add_argument("-o", "--output", type=Path, default=None, help="Output .md file (stdout if omitted)")
     parser.add_argument("--assets", type=Path, default=None, help="Directory to write extracted images to")
-    parser.add_argument("--lang", default="ukr+rus+eng", help='Tesseract language spec (e.g. "ukr+rus+eng")')
+    parser.add_argument(
+        "--lang",
+        default="auto",
+        help="Tesseract language spec. `auto` (default) sniffs the document's "
+        "existing text layer and picks a narrow pack like `ces+eng`. "
+        "Pass an explicit string (e.g. `ukr+rus+eng`) to override.",
+    )
     parser.add_argument(
         "--all-pages",
         action="store_true",
