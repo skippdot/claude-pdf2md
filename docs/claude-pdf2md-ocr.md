@@ -1,5 +1,10 @@
 # `claude-pdf2md-ocr` — design & plan
 
+> **Status (2026-04-21):** plugin lives in its own repo at
+> **<https://github.com/skippdot/claude-pdf2md-ocr>**. Prototype, not yet on
+> PyPI. This document retains the design rationale that informed the
+> extraction; day-to-day work happens over there.
+
 ## Why a separate package
 
 `claude-pdf2md` handles PDFs with an existing text layer: PyMuPDF gives us chars, fonts, spans, link annotations, so the whole pipeline is deterministic and fast. Scanned PDFs (and hybrid PDFs where only the cover page has a text layer, like the insurance contract in `output3.md`) have no text to extract — every page comes through as a figure placeholder.
