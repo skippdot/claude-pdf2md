@@ -30,8 +30,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
       - name: Verify tag matches package version
+        # Parse __version__ with a regex so this step works without installing
+        # the package itself (which would pull pymupdf etc. into the release
+        # job for no reason — the build step does that on its own).
         run: |
-          PACKAGE_VERSION=$(python -c "import claude_pdf2md; print(claude_pdf2md.__version__)")
+          PACKAGE_VERSION=$(python -c "import re, pathlib; print(re.search(r'__version__\s*=\s*\"([^\"]+)\"', pathlib.Path('claude_pdf2md/__init__.py').read_text()).group(1))")
           TAG_VERSION="${GITHUB_REF_NAME#v}"
           echo "tag=$TAG_VERSION package=$PACKAGE_VERSION"
           test "$PACKAGE_VERSION" = "$TAG_VERSION"
