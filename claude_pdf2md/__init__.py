@@ -11,4 +11,4 @@ __all__ = [
     "convert_to_string",
     "validate_doc",
 ]
-__version__ = "0.1.2"
+__version__ = "0.1.3"
