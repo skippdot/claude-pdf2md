@@ -22,7 +22,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 INIT_FILE = ROOT / "claude_pdf2md" / "__init__.py"
-VERSION_RE = re.compile(r'^(__version__\s*=\s*")(\d+)\.(\d+)\.(\d+)(")\s*$', re.MULTILINE)
+# Trailing whitespace deliberately uses `[ \t]*` — NOT `\s*`. In MULTILINE
+# mode `\s` includes `\n`, so a greedy `\s*$` would eat the file's trailing
+# newline during `subn`, and ruff format would then flag it. Horizontal-only
+# whitespace keeps the newline intact.
+VERSION_RE = re.compile(r'^(__version__\s*=\s*")(\d+)\.(\d+)\.(\d+)(")[ \t]*$', re.MULTILINE)
 
 
 def _read_version() -> tuple[int, int, int]:
