@@ -1,0 +1,36 @@
+# Run all checks without installing the git hook:
+#     source .venv/bin/activate
+#     pre-commit run --all-files
+#
+# Wire it into git only if you want it to fire on every commit:
+#     pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: Run black (format check)
+        entry: black --check --diff
+        language: system
+        types: [python]
+        files: '^(claude_pdf2md|tests)/.*\.py$'
+      - id: pylint
+        name: Run pylint (fail under 10.00)
+        entry: pylint
+        language: system
+        types: [python]
+        files: '^claude_pdf2md/.*\.py$'
+        args: [--rcfile=.pylintrc, --fail-under=10]
+      - id: bandit
+        name: Run bandit (security, -ll)
+        entry: bandit -r claude_pdf2md -ll
+        language: system
+        pass_filenames: false
+        always_run: false
+        files: '^claude_pdf2md/.*\.py$'
+      - id: pytest
+        name: Run pytest with coverage (fail under 85)
+        entry: pytest --cov=claude_pdf2md --cov-fail-under=85 -q
+        language: system
+        pass_filenames: false
+        always_run: false
+        files: '.*\.py$'

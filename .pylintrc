@@ -8,27 +8,24 @@ max-line-length=120
 
 [MESSAGES CONTROL]
 # The project style keeps docstrings sparse by design — identifiers and
-# short block comments carry the intent. We disable docstring checks to
-# avoid drowning real signal in noise.
+# short block comments carry the intent. The three docstring rules are
+# disabled to avoid drowning real signal in noise.
+# `import-outside-toplevel` is disabled because `weasyprint` / `markdown_it`
+# live in the [diff] extra and are lazy-imported inside functions.
+# The three `too-many-*` entries cover dense PDF-parsing state machines where
+# splitting would hurt clarity more than it helps.
 disable=
     missing-module-docstring,
     missing-class-docstring,
     missing-function-docstring,
-    too-few-public-methods,
-    too-many-instance-attributes,
+    import-outside-toplevel,
     too-many-locals,
     too-many-return-statements,
-    too-many-branches,
-    too-many-statements,
-    too-many-arguments,
-    too-many-boolean-expressions,
-    too-many-nested-blocks,
-    too-many-positional-arguments,
-    import-outside-toplevel,
-    fixme,
-    duplicate-code
+    too-many-boolean-expressions
 
 [DESIGN]
+# The `Block` dataclass in model.py carries 9 fields, one per kind of payload
+# a PDF block can hold (lines / bbox / level / table / image / etc.).
 max-attributes=12
 
 [SIMILARITIES]
